@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="./node_modules/highlight.js/styles/dracula.css" />
+    <link rel="stylesheet" href="./assets/css/index.css"/>
+  </head>
+  <body class="main">
+    <div contenteditable="true" id="source" class="half" autofocus></div>
+    <div id="target" class="half"></div>
+    <div id="cache" class="cacha-hidden"></div>
+    <script>
+      const electron = require('electron');
+      const {ipcRenderer} = electron;
+      const fs = require('fs');
+      const marked = require('marked');
+      const highlight = require('highlight.js');
+      const markdownPdf = require('markdown-pdf');
+
+      const sourceBox = document.querySelector('#source');
+      const targetBox = document.querySelector('#target');
+      const cacheBox = document.querySelector('#cache');
+      const link = document.getElementsByTagName('link')[0];
+
+      let highlightTheme = 'dracula';
+
+      marked.setOptions({
+        renderer: new marked.Renderer(),
+        highlight: function(code) {
+          return highlight.highlightAuto(code).value;
+        },
+        pedantic: false,
+        gfm: true,
+        tables: true,
+        breaks: true,
+        sanitize: false,
+        smartLists: true,
+        smartypants: false,
+        xhtml: false
+      });
+
+      function syncSourceTarget(sourceData) {
+        if (!sourceData) {
+          sourceData = sourceBox.innerText;
+        }
+        targetBox.innerHTML = marked(sourceData || '');
+      }
+      sourceBox.addEventListener('input', function(e){
+        syncSourceTarget();
+      })
+
+      ipcRenderer.on('theme:set', function(e, item){
+        highlightTheme = item.toLowerCase();
+        link.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+        syncSourceTarget();
+      })
+      
+      ipcRenderer.on('clear:all', function(e){
+        sourceBox.innerText = '';
+        targetBox.innerHTML = '';
+      })
+
+      ipcRenderer.on('file:open', function(e, data){
+        cacheBox.innerHTML = marked(data);
+        const themeInput = document.querySelector('#md-ly-codeTheme');
+        highlightTheme = themeInput.value;
+        link.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+        themeInput.remove();
+        targetBox.innerHTML = cacheBox.innerHTML;
+        //const removeInput = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
+        sourceBox.innerText = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
+        
+      })
+
+      ipcRenderer.on('file:save', function(e, filename){
+        let data = sourceBox.innerText;
+        data += '<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">'
+        fs.writeFile(filename, data, function(err){
+          if(err) {
+            alert("An error ocurred saving the file "+ err.message);
+          }
+          ipcRenderer.send('file:save', err);
+        })
+      })
+
+      ipcRenderer.on('file:export:html', function(e, filename){
+        const html = targetBox.innerHTML;
+        fs.writeFile(filename, html, function(err){
+          if(err) {
+            alert("An error ocurred export the file "+ err.message);
+          }
+        })
+      })
+
+      ipcRenderer.on('file:export:pdf', function(e, filename){
+        const data = sourceBox.innerText;
+        markdownPdf({
+          cssPath: './assets/css/pdf.css',
+          highlightCssPath: './node_modules/highlight.js/styles/' + highlightTheme + '.css',
+          remarkable: {
+            linkify: true,
+            html: true,
+            breaks: true,
+          }
+        }).from.string(data).to(filename, function(err){
+          console.log(err);
+        })
+      })
+    </script>
+  </body>
+</html>

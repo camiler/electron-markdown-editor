@@ -1,0 +1,34 @@
+html,body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+*{
+  box-sizing: border-box;
+}
+.main{
+  background: #fff;
+  color: #666;
+}
+.half{
+  width: 50%;
+  height: 100%;
+  float: left;
+  overflow: auto;
+}
+.half:focus{
+  outline: none;
+}
+#source{
+  border-right: 1px solid #ddd;
+  padding: 20px;
+}
+#target{
+  padding: 8px;
+}
+.cacha-hidden{
+  display: none;
+  visibility: hidden;
+}
