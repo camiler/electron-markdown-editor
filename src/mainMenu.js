@@ -1,12 +1,16 @@
 const electron = require('electron');
-var fs = require('fs');
-const { app, dialog, ipcMain } = electron;
+const {webContents} = electron;
+const fs = require('fs');
+
+const { dialog } = electron;
 
 const THEMES = ['a11y-dark', 'a11y-light', 'agate', 'arta', 'ascetic', 'atom-one-dark', 'atom-one-light', 'Darcula', 'Dark', 'default', 'github', 'Googlecode', 'hybird', 'idea', 'nagula', 'Monokai', 'Ocean', 'Rainbow', 'Tomorrow'];
 const filters = [{name: 'markdown', extensions: ['md']}];
 
 const mainMenuTemplate = ({isMac, createWindow}) => {
   let themeChecked = 'Darcula';
+  let windowThemeChecked = 'light';
+
   const genCodeThemeList = () => {
     const list = [];
     THEMES.forEach(theme => {
@@ -23,6 +27,11 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
     return list;
   }
 
+  const setWindowTheme = (item, browserWindow) => {
+    windowThemeChecked = item.label;
+    browserWindow.webContents.send('windowTheme:set', item.label);
+  }
+
   const menus = [{
     label: 'File',
     submenu: [
@@ -37,20 +46,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
         label: 'Open',
         accelerator: isMac ? 'Command+O' : 'Ctrl+O',
         click(item, browserWindow) {
-          dialog.showOpenDialog(browserWindow, {properties: ['openFile', 'openDirectory'], filters}, function(filePaths){
-            if (filePaths === undefined) {
-              console.log("No file selected");
-              return;
-            }
-            const file = filePaths && filePaths[0];
-            fs.readFile(file, 'utf-8', (err, data) => {
-              if(err){
-                alert("An error ocurred reading the file :" + err.message);
-                return;
-              }
-              browserWindow.webContents.send('file:open', data);
-            })
-          });
+          browserWindow.webContents.send('file:open:check');
         }
       },
       {
@@ -121,8 +117,8 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       { role: 'resetzoom' },
       { role: 'zoomin' },
       { role: 'zoomout' },
-      { type: 'separator' },
       { role: 'togglefullscreen' },
+      { type: 'separator' },
       { 
         label: 'code theme', 
         submenu: genCodeThemeList()
@@ -137,22 +133,34 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       ...(isMac ? [
         { type: 'separator' },
         { role: 'front' },
-        { type: 'separator' },
-        { role: 'window' }
       ] : [
-        { role: 'close' }
-      ])
+        { role: 'close' },
+      ]),
+      {
+        label: 'theme',
+        submenu: [{
+          type: 'radio',
+          label: 'light',
+          checked: windowThemeChecked === 'ligth',
+          click: setWindowTheme
+        }, {
+          type: 'radio',
+          label: 'dark',
+          checked: windowThemeChecked === 'dark',
+          click: setWindowTheme
+        }]
+      }
     ]
   },
-  // {
-  //   role: 'help',
-  //   submenu: [
-  //     {
-  //       label: 'Learn More',
-  //       click () { require('electron').shell.openExternalSync('https://electronjs.org') }
-  //     }
-  //   ]
-  // }
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More',
+        click () { require('electron').shell.openExternalSync('https://github.com/camiler/electron-markdwon-editor') }
+      }
+    ]
+  }
   ];
 
   // if mac, add empty object to menu
@@ -173,8 +181,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
     });
   };
 
-  // add tools item if not production
-  if (process.env.NODE_ENV !== 'production'){
+  if (process.env.NODE_ENV === 'development'){
     menus.push({
       label: 'Dev Tools',
       submenu: [{
@@ -184,6 +191,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       }] 
     })
   }
+
   return menus;
 };
 

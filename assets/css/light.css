@@ -1,0 +1,10 @@
+.main{
+  background: #fff;
+  color: #666;
+}
+#source{
+  border-right: 1px solid #ddd;
+}
+pre, code{
+  background: #ddd;
+}

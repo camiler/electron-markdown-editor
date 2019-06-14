@@ -2,9 +2,10 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Todo List</title>
+    <title>EM</title>
     <link rel="stylesheet" href="./node_modules/highlight.js/styles/dracula.css" />
     <link rel="stylesheet" href="./assets/css/index.css"/>
+    <link rel="stylesheet" href="./assets/css/light.css"/>
   </head>
   <body class="main">
     <div contenteditable="true" id="source" class="half" autofocus></div>
@@ -21,9 +22,12 @@
       const sourceBox = document.querySelector('#source');
       const targetBox = document.querySelector('#target');
       const cacheBox = document.querySelector('#cache');
-      const link = document.getElementsByTagName('link')[0];
+      const links = document.getElementsByTagName('link');
+      const codeThemeLink = links[0];
+      const winThemeLink = links[2];
 
       let highlightTheme = 'dracula';
+      let winTheme = 'light';
 
       marked.setOptions({
         renderer: new marked.Renderer(),
@@ -52,7 +56,7 @@
 
       ipcRenderer.on('theme:set', function(e, item){
         highlightTheme = item.toLowerCase();
-        link.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+        codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
         syncSourceTarget();
       })
       
@@ -61,16 +65,20 @@
         targetBox.innerHTML = '';
       })
 
+      ipcRenderer.on('file:open:check', function(e){
+        const open = !sourceBox.innerText;
+        console.log(open);
+        ipcRenderer.send('file:open:check', open);
+      })
+
       ipcRenderer.on('file:open', function(e, data){
         cacheBox.innerHTML = marked(data);
         const themeInput = document.querySelector('#md-ly-codeTheme');
         highlightTheme = themeInput.value;
-        link.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+        codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
         themeInput.remove();
         targetBox.innerHTML = cacheBox.innerHTML;
-        //const removeInput = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
         sourceBox.innerText = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
-        
       })
 
       ipcRenderer.on('file:save', function(e, filename){
@@ -106,6 +114,11 @@
         }).from.string(data).to(filename, function(err){
           console.log(err);
         })
+      })
+
+      ipcRenderer.on('windowTheme:set', function(e, label){
+        winThemeLink.href = winThemeLink.href.replace(winTheme, label);
+        winTheme = label;
       })
     </script>
   </body>

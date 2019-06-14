@@ -1,0 +1,13 @@
+.main{
+  background: #333;
+  color: #fff;
+}
+a{
+  color: royalblue;
+}
+#source{
+  border-right: 1px solid #999;
+}
+pre, code{
+  background: #999;
+}

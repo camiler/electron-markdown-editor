@@ -8,10 +8,7 @@ html,body{
 *{
   box-sizing: border-box;
 }
-.main{
-  background: #fff;
-  color: #666;
-}
+
 .half{
   width: 50%;
   height: 100%;
@@ -22,7 +19,6 @@ html,body{
   outline: none;
 }
 #source{
-  border-right: 1px solid #ddd;
   padding: 20px;
 }
 #target{
@@ -31,4 +27,9 @@ html,body{
 .cacha-hidden{
   display: none;
   visibility: hidden;
+}
+pre{
+  display: block;
+  overflow: auto;
+  padding: 10px;
 }
