@@ -5,8 +5,6 @@ pre{
   border: 1px solid #eee;
   padding: 10px;
   margin-top: 10px;
-}
-pre{
   background: #ddd;
   display: block;
   overflow: auto;

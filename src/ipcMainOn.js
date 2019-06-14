@@ -1,5 +1,6 @@
-const {ipcMain, dialog} = require('electron');
+const {ipcMain, dialog, BrowserWindow} = require('electron');
 const fs = require('fs');
+const url = require('url');
 const filters = [{name: 'markdown', extensions: ['md']}];
 
 const openFile = (browserWindow) => {
@@ -19,8 +20,8 @@ const openFile = (browserWindow) => {
   });
 }
 
-const EventOn = (mainWindow) => {
-  ipcMain.on('file:save', function(err){
+const EventOn = (mainWindow, printWindow) => {
+  ipcMain.on('file:save', function(e, err){
     if (!err) {
       dialog.showMessageBox({type: 'info', message: 'file saved successfully!'})
     }
@@ -35,6 +36,22 @@ const EventOn = (mainWindow) => {
         openFile(mainWindow);
       })
     }
+  })
+
+  ipcMain.on('print:pdf:ready', function(e, filename){
+    const printWindow = new BrowserWindow({
+      show: false
+    });
+    printWindow.loadURL(url.format({
+      protocol: 'file',
+      slashes: true,
+      pathname: filename
+    }));
+    printWindow.webContents.print({}, (error, data) => {
+      if (error) throw error;
+      console.log('print PDF successfully.')
+      printWindow.close();
+    })
   })
 }
 

@@ -18,6 +18,7 @@
       const marked = require('marked');
       const highlight = require('highlight.js');
       const markdownPdf = require('markdown-pdf');
+      const path = require('path');
 
       const sourceBox = document.querySelector('#source');
       const targetBox = document.querySelector('#target');
@@ -101,7 +102,7 @@
         })
       })
 
-      ipcRenderer.on('file:export:pdf', function(e, filename){
+      ipcRenderer.on('file:export:pdf', function(e, {filename, print}){
         const data = sourceBox.innerText;
         markdownPdf({
           cssPath: './assets/css/pdf.css',
@@ -111,7 +112,8 @@
             html: true,
             breaks: true,
           }
-        }).from.string(data).to(filename, function(err){
+        })
+        .from.string(data).to(filename, function(err){
           console.log(err);
         })
       })
@@ -119,6 +121,17 @@
       ipcRenderer.on('windowTheme:set', function(e, label){
         winThemeLink.href = winThemeLink.href.replace(winTheme, label);
         winTheme = label;
+      })
+
+      ipcRenderer.on('print:pdf', function(e){
+        const data = targetBox.innerHTML;
+        const filePath = path.join(__dirname, 'print.html');
+        fs.writeFile(filePath, data, function(err){
+          if(err) {
+            alert("An error ocurred export the file "+ err.message);
+          }
+          ipcRenderer.send('print:pdf:ready', filePath);
+        })
       })
     </script>
   </body>

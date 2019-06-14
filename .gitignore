@@ -2,3 +2,4 @@ node_modules/
 release-builds/
 .history/
 .DS_Store
+print.html

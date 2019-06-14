@@ -31,7 +31,7 @@ function createWindow(options){
 
   const mainMenu = Menu.buildFromTemplate(mainMenuTemplate({mainWindow, isMac, createWindow}));
   Menu.setApplicationMenu(mainMenu);
-  
+
   ipcMainOn(mainWindow);
 }
 

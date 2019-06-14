@@ -1,6 +1,8 @@
 const electron = require('electron');
-const {webContents} = electron;
-const fs = require('fs');
+// const fs = require('fs');
+// const path = require('path');
+// const createPrintWindow = require('../print');
+const { app, shell} = electron;
 
 const { dialog } = electron;
 
@@ -59,6 +61,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
           })
         }
       },
+      { type: 'separator' },
       {
         label: 'Export As',
         submenu: [
@@ -76,6 +79,13 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
           }},
         ]
       },
+      {
+        label: 'Print',
+        click(item, browserWindow){
+          browserWindow.webContents.send('print:pdf');
+        }
+      },
+      { type: 'separator' },
       {
         label: 'Clear All',
         click(item, browserWindow) {
@@ -119,8 +129,25 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       { role: 'zoomout' },
       { role: 'togglefullscreen' },
       { type: 'separator' },
+      { label: 'Hide left editor', 
+        click(){
+
+        }
+      },
+      { label: 'Hide right previwer', 
+        click(){
+          
+        }
+      },
+      { type: 'separator' },
+      { label: 'Open in browser with nodeppt',
+        click() {
+
+        }
+      },
+      { type: 'separator' },
       { 
-        label: 'code theme', 
+        label: 'Code theme', 
         submenu: genCodeThemeList()
       }
     ]
@@ -137,7 +164,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
         { role: 'close' },
       ]),
       {
-        label: 'theme',
+        label: 'Theme',
         submenu: [{
           type: 'radio',
           label: 'light',
@@ -157,7 +184,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
     submenu: [
       {
         label: 'Learn More',
-        click () { require('electron').shell.openExternalSync('https://github.com/camiler/electron-markdwon-editor') }
+        click () { shell.openExternalSync('https://github.com/camiler/electron-markdwon-editor') }
       }
     ]
   }
@@ -166,7 +193,7 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
   // if mac, add empty object to menu
   if (isMac) {
     menus.unshift({
-      label: 'MarkD',
+      label: app.getName(),
       submenu: [
         { role: 'about' },
         { type: 'separator' },
