@@ -6,6 +6,21 @@
     <link rel="stylesheet" href="./node_modules/highlight.js/styles/dracula.css" />
     <link rel="stylesheet" href="./assets/css/index.css"/>
     <link rel="stylesheet" href="./assets/css/light.css"/>
+<script id="entry-template" type="text/x-handlebars-template">
+<!DOCTYPE html>
+  <html style="height: 100%">
+    <head>
+      <meta charset="UTF-8">
+      <link rel="stylesheet" href="./node_modules/highlight.js/styles/{{highlightTheme}}.css" />
+      <link rel="stylesheet" href="./assets/css/{{winTheme}}.css"/>
+    </head>
+    <body style="width: 100%; height: 100%; background: #ddd; margin: 0">
+      <div style="margin: 20px auto; width: 60%; height: 100%; overflow: auto; background: #fff; border-radius: 6px; padding: 0 24px;">
+        {{{content}}}
+      </div>
+    </body>
+  </html>
+</script>
   </head>
   <body class="main">
     <div contenteditable="true" id="source" class="half" autofocus></div>
@@ -19,6 +34,9 @@
       const highlight = require('highlight.js');
       const markdownPdf = require('markdown-pdf');
       const path = require('path');
+      const handlebars = require('handlebars');
+      
+      const printTemplate = document.querySelector('#entry-template').innerHTML;
 
       const sourceBox = document.querySelector('#source');
       const targetBox = document.querySelector('#target');
@@ -54,6 +72,20 @@
       sourceBox.addEventListener('input', function(e){
         syncSourceTarget();
       })
+
+      function createHtml(filename, callback) {
+        const content = targetBox.innerHTML;
+        const filePath = path.join(__dirname, 'print.html');
+        filename = filename || filePath;
+        const data = handlebars.compile(printTemplate)({content, highlightTheme, winTheme});
+        fs.writeFile(filename, data, function(err){
+          if(err) {
+            alert("An error ocurred export the file "+ err.message);
+          } else {
+            callback(filename);
+          }
+        })
+      }
 
       ipcRenderer.on('theme:set', function(e, item){
         highlightTheme = item.toLowerCase();
@@ -93,11 +125,10 @@
         })
       })
 
-      ipcRenderer.on('file:export:html', function(e, filename){
-        const html = targetBox.innerHTML;
-        fs.writeFile(filename, html, function(err){
-          if(err) {
-            alert("An error ocurred export the file "+ err.message);
+      ipcRenderer.on('file:export:html', function(e, {filename, openInBrowser}){
+        createHtml(filename, (filename) => {
+          if (openInBrowser) {
+            ipcRenderer.send('html:open:ready', filename);
           }
         })
       })
@@ -124,13 +155,8 @@
       })
 
       ipcRenderer.on('print:pdf', function(e){
-        const data = targetBox.innerHTML;
-        const filePath = path.join(__dirname, 'print.html');
-        fs.writeFile(filePath, data, function(err){
-          if(err) {
-            alert("An error ocurred export the file "+ err.message);
-          }
-          ipcRenderer.send('print:pdf:ready', filePath);
+        createHtml(null, (filename) => {
+          ipcRenderer.send('print:pdf:ready', filename);
         })
       })
     </script>

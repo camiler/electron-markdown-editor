@@ -1,6 +1,6 @@
 const electron = require('electron');
 // const fs = require('fs');
-// const path = require('path');
+const path = require('path');
 // const createPrintWindow = require('../print');
 const { app, shell} = electron;
 
@@ -140,9 +140,9 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
         }
       },
       { type: 'separator' },
-      { label: 'Open in browser with nodeppt',
-        click() {
-
+      { label: 'Open in browser',
+        click(item, browserWindow) {
+          browserWindow.webContents.send('file:export:html', {openInBrowser: true});
         }
       },
       { type: 'separator' },

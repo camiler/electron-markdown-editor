@@ -4,9 +4,7 @@
   "version": "1.0.0",
   "description": "markdown editor, support for export pdf and html",
   "main": "main.js",
-  "build": {
-
-  },
+  "build": {},
   "scripts": {
     "start": "cross-env NODE_ENV=development electron .",
     "pre-pack": "rimraf ./release-builds",
@@ -25,6 +23,7 @@
     "rimraf": "^2.6.3"
   },
   "dependencies": {
+    "handlebars": "^4.1.2",
     "highlight.js": "^9.15.8",
     "markdown-pdf": "^9.0.0",
     "marked": "^0.6.2"

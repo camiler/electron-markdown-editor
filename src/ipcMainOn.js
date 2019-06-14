@@ -1,4 +1,4 @@
-const {ipcMain, dialog, BrowserWindow} = require('electron');
+const {ipcMain, dialog, BrowserWindow, shell} = require('electron');
 const fs = require('fs');
 const url = require('url');
 const filters = [{name: 'markdown', extensions: ['md']}];
@@ -52,6 +52,10 @@ const EventOn = (mainWindow, printWindow) => {
       console.log('print PDF successfully.')
       printWindow.close();
     })
+  })
+
+  ipcMain.on('html:open:ready', function(e, filename){
+    shell.openExternalSync('file://' + filename);
   })
 }
 
