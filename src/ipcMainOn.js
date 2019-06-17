@@ -22,8 +22,8 @@ const openFile = (browserWindow) => {
 
 const EventOn = (mainWindow, printWindow) => {
   ipcMain.on('file:save', function(e, err){
-    if (!err) {
-      dialog.showMessageBox({type: 'info', message: 'file saved successfully!'})
+    if (err) {
+      console.log(err);
     }
   })
 

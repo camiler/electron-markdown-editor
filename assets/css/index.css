@@ -9,19 +9,27 @@ html,body{
   box-sizing: border-box;
 }
 
-.half{
-  width: 50%;
+.left-screen, .right-screen{
   height: 100%;
-  float: left;
   overflow: auto;
 }
-.half:focus{
-  outline: none;
+.half{
+  width: 50%;
+  float: left;
 }
-#source{
+.fullscreen{
+  width: 100%;
+}
+.left-screen{
   padding: 20px;
 }
-#target{
+.left-screen:focus{
+  outline: none;
+}
+.left-screen.fullscreen{
+  border-right: 0;
+}
+.right-screen{
   padding: 8px;
 }
 .cacha-hidden{
@@ -33,3 +41,14 @@ pre{
   overflow: auto;
   padding: 10px;
 }
+.hide{
+  display: none;
+}
+blockquote{
+  background: #eee;
+  margin: 0;
+  word-break: break-word;
+  padding: 0 10px;
+  border-left: 6px solid #ddd;
+}
+

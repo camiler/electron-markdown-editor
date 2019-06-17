@@ -5,7 +5,7 @@
 a{
   color: royalblue;
 }
-#source{
+.left-screen{
   border-right: 1px solid #999;
 }
 pre, code{

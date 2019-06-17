@@ -23,8 +23,8 @@
 </script>
   </head>
   <body class="main">
-    <div contenteditable="true" id="source" class="half" autofocus></div>
-    <div id="target" class="half"></div>
+    <div contenteditable="true" id="source" class="left-screen half" autofocus></div>
+    <div id="target" class="right-screen half"></div>
     <div id="cache" class="cacha-hidden"></div>
     <script>
       const electron = require('electron');
@@ -72,6 +72,10 @@
       sourceBox.addEventListener('input', function(e){
         syncSourceTarget();
       })
+      sourceBox.addEventListener('scroll', function(e){
+        const scale = sourceBox.scrollHeight / targetBox.scrollHeight;
+        targetBox.scrollTop = sourceBox.scrollTop / scale;
+      })
 
       function createHtml(filename, callback) {
         const content = targetBox.innerHTML;
@@ -87,78 +91,89 @@
         })
       }
 
-      ipcRenderer.on('theme:set', function(e, item){
-        highlightTheme = item.toLowerCase();
-        codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
-        syncSourceTarget();
-      })
+      const ipcRendererEvents = {
+        'theme:set': function(e, item){
+          highlightTheme = item.toLowerCase();
+          codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+          syncSourceTarget();
+        },
+        'clear:all': function(e){
+          sourceBox.innerText = '';
+          targetBox.innerHTML = '';
+        },
+        'file:open:check': function(e){
+          const open = !sourceBox.innerText;
+          ipcRenderer.send('file:open:check', open);
+        },
+        'file:open': function(e, data){
+          cacheBox.innerHTML = marked(data);
+          const themeInput = document.querySelector('#md-ly-codeTheme');
+          highlightTheme = themeInput.value;
+          codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
+          themeInput.remove();
+          targetBox.innerHTML = cacheBox.innerHTML;
+          sourceBox.innerText = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
+        },
+        'file:save': function(e, filename){
+          let data = sourceBox.innerText;
+          data += '<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">'
+          fs.writeFile(filename, data, function(err){
+            if(err) {
+              alert("An error ocurred saving the file "+ err.message);
+            }
+            ipcRenderer.send('file:save', err);
+          })
+        },
+        'file:export:html': function(e, {filename, openInBrowser}){
+          createHtml(filename, (filename) => {
+            if (openInBrowser) {
+              ipcRenderer.send('html:open:ready', filename);
+            }
+          })
+        },
+        'file:export:pdf': function(e, filename){
+          const data = sourceBox.innerText;
+          markdownPdf({
+            cssPath: './assets/css/pdf.css',
+            highlightCssPath: './node_modules/highlight.js/styles/' + highlightTheme + '.css',
+            remarkable: {
+              linkify: true,
+              html: true,
+              breaks: true,
+            }
+          })
+          .from.string(data).to(filename, function(err){
+            console.log(err);
+          })
+        },
+        'windowTheme:set': function(e, label){
+          winThemeLink.href = winThemeLink.href.replace(winTheme, label);
+          winTheme = label;
+        },
+        'print:pdf': function(e){
+          createHtml(null, (filename) => {
+            ipcRenderer.send('print:pdf:ready', filename);
+          })
+        },
+        'view:hide:target': function(e){
+          targetBox.setAttribute('class', 'hide');
+          sourceBox.setAttribute('class', 'left-screen fullscreen');
+        },
+        'view:hide:source': function(e){
+          targetBox.setAttribute('class', 'right-screen fullscreen');
+          sourceBox.setAttribute('class', 'hide');
+        },
+        'view:reset': function(e){
+          targetBox.setAttribute('class', 'right-screen half');
+          sourceBox.setAttribute('class', 'left-screen half');
+        }
+      }
       
-      ipcRenderer.on('clear:all', function(e){
-        sourceBox.innerText = '';
-        targetBox.innerHTML = '';
-      })
-
-      ipcRenderer.on('file:open:check', function(e){
-        const open = !sourceBox.innerText;
-        console.log(open);
-        ipcRenderer.send('file:open:check', open);
-      })
-
-      ipcRenderer.on('file:open', function(e, data){
-        cacheBox.innerHTML = marked(data);
-        const themeInput = document.querySelector('#md-ly-codeTheme');
-        highlightTheme = themeInput.value;
-        codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
-        themeInput.remove();
-        targetBox.innerHTML = cacheBox.innerHTML;
-        sourceBox.innerText = data.replace('<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">', '');
-      })
-
-      ipcRenderer.on('file:save', function(e, filename){
-        let data = sourceBox.innerText;
-        data += '<input hidden value="' + highlightTheme + '" id="md-ly-codeTheme">'
-        fs.writeFile(filename, data, function(err){
-          if(err) {
-            alert("An error ocurred saving the file "+ err.message);
-          }
-          ipcRenderer.send('file:save', err);
-        })
-      })
-
-      ipcRenderer.on('file:export:html', function(e, {filename, openInBrowser}){
-        createHtml(filename, (filename) => {
-          if (openInBrowser) {
-            ipcRenderer.send('html:open:ready', filename);
-          }
-        })
-      })
-
-      ipcRenderer.on('file:export:pdf', function(e, {filename, print}){
-        const data = sourceBox.innerText;
-        markdownPdf({
-          cssPath: './assets/css/pdf.css',
-          highlightCssPath: './node_modules/highlight.js/styles/' + highlightTheme + '.css',
-          remarkable: {
-            linkify: true,
-            html: true,
-            breaks: true,
-          }
-        })
-        .from.string(data).to(filename, function(err){
-          console.log(err);
-        })
-      })
-
-      ipcRenderer.on('windowTheme:set', function(e, label){
-        winThemeLink.href = winThemeLink.href.replace(winTheme, label);
-        winTheme = label;
-      })
-
-      ipcRenderer.on('print:pdf', function(e){
-        createHtml(null, (filename) => {
-          ipcRenderer.send('print:pdf:ready', filename);
-        })
-      })
+      for (const key in ipcRendererEvents) {
+        if (ipcRendererEvents.hasOwnProperty(key)) {
+          ipcRenderer.on(key, ipcRendererEvents[key]);
+        }
+      }
     </script>
   </body>
 </html>

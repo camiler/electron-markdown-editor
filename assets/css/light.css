@@ -2,7 +2,7 @@
   background: #fff;
   color: #666;
 }
-#source{
+.left-screen{
   border-right: 1px solid #ddd;
 }
 pre, code{

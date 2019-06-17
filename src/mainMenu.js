@@ -1,7 +1,4 @@
 const electron = require('electron');
-// const fs = require('fs');
-const path = require('path');
-// const createPrintWindow = require('../print');
 const { app, shell} = electron;
 
 const { dialog } = electron;
@@ -130,13 +127,18 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       { role: 'togglefullscreen' },
       { type: 'separator' },
       { label: 'Hide left editor', 
-        click(){
-
+        click(item, browserWindow){
+          browserWindow.webContents.send('view:hide:source');
         }
       },
       { label: 'Hide right previwer', 
-        click(){
-          
+        click(item, browserWindow){
+          browserWindow.webContents.send('view:hide:target');
+        }
+      },
+      { label: '1:1 reset', 
+        click(item, browserWindow){
+          browserWindow.webContents.send('view:reset');
         }
       },
       { type: 'separator' },
