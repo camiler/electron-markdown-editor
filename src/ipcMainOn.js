@@ -20,7 +20,7 @@ const openFile = (browserWindow) => {
   });
 }
 
-const EventOn = (mainWindow, printWindow) => {
+const EventOn = (mainWindow, mainMenu) => {
   ipcMain.on('file:save', function(e, err){
     if (err) {
       console.log(err);
@@ -56,6 +56,11 @@ const EventOn = (mainWindow, printWindow) => {
 
   ipcMain.on('html:open:ready', function(e, filename){
     shell.openExternalSync('file://' + filename);
+  })
+
+  ipcMain.on('codeTheme:set', function(e, theme){
+    const themeMenu = mainMenu.getMenuItemById('code-theme-' + theme);
+    themeMenu.checked = true;
   })
 }
 

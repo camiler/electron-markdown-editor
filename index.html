@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>EM</title>
-    <link rel="stylesheet" href="./node_modules/highlight.js/styles/dracula.css" />
+    <link rel="stylesheet" href="./node_modules/highlight.js/styles/default.css" />
     <link rel="stylesheet" href="./assets/css/index.css"/>
     <link rel="stylesheet" href="./assets/css/light.css"/>
 <script id="entry-template" type="text/x-handlebars-template">
@@ -45,7 +45,7 @@
       const codeThemeLink = links[0];
       const winThemeLink = links[2];
 
-      let highlightTheme = 'dracula';
+      let highlightTheme = 'default';
       let winTheme = 'light';
 
       marked.setOptions({
@@ -109,6 +109,7 @@
           cacheBox.innerHTML = marked(data);
           const themeInput = document.querySelector('#md-ly-codeTheme');
           highlightTheme = themeInput.value;
+          ipcRenderer.send('codeTheme:set', highlightTheme);
           codeThemeLink.href = './node_modules/highlight.js/styles/' + highlightTheme + '.css';
           themeInput.remove();
           targetBox.innerHTML = cacheBox.innerHTML;
@@ -142,8 +143,8 @@
               breaks: true,
             }
           })
-          .from.string(data).to(filename, function(err){
-            console.log(err);
+          .from.string(data).to(filename, function(){
+            console.log('export pdf done');
           })
         },
         'windowTheme:set': function(e, label){

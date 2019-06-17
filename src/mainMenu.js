@@ -7,7 +7,9 @@ const THEMES = ['a11y-dark', 'a11y-light', 'agate', 'arta', 'ascetic', 'atom-one
 const filters = [{name: 'markdown', extensions: ['md']}];
 
 const mainMenuTemplate = ({isMac, createWindow}) => {
-  let themeChecked = 'Darcula';
+  if (!global.codeThemeChecked) {
+    global.codeThemeChecked = 'default';
+  }
   let windowThemeChecked = 'light';
 
   const genCodeThemeList = () => {
@@ -16,9 +18,10 @@ const mainMenuTemplate = ({isMac, createWindow}) => {
       list.push({
         label: theme,
         type: 'radio',
-        checked: Boolean(themeChecked == theme),
+        id: 'code-theme-' + theme,
+        checked: Boolean(global.codeThemeChecked == theme),
         click(item, browserWindow) {
-          themeChecked = theme;
+          global.codeThemeChecked = theme;
           browserWindow.webContents.send('theme:set', theme);
         }
       })

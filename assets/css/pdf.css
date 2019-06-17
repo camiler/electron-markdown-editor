@@ -19,5 +19,6 @@ blockquote{
   margin: 0;
   word-break: break-word;
   padding: 0 10px;
+  border: none;
   border-left: 6px solid #ddd;
 }

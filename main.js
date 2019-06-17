@@ -28,11 +28,11 @@ function createWindow(options){
   mainWindow.on('closed', () => {
     mainWindow = null;
   })
-
-  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate({mainWindow, isMac, createWindow}));
+  const menus = mainMenuTemplate({mainWindow, isMac, createWindow});
+  const mainMenu = Menu.buildFromTemplate(menus);
   Menu.setApplicationMenu(mainMenu);
 
-  ipcMainOn(mainWindow);
+  ipcMainOn(mainWindow, mainMenu);
 }
 
 // 当全部窗口关闭时退出。
