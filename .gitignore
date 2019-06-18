@@ -3,3 +3,4 @@ release-builds/
 .history/
 .DS_Store
 print.html
+dist/

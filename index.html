@@ -126,7 +126,7 @@
           })
         },
         'file:export:html': function(e, {filename, openInBrowser}){
-          createHtml(filename, (filename) => {
+          createHtml(filename, function(filename){
             if (openInBrowser) {
               ipcRenderer.send('html:open:ready', filename);
             }

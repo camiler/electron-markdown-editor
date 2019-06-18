@@ -47,9 +47,8 @@ const EventOn = (mainWindow, mainMenu) => {
       slashes: true,
       pathname: filename
     }));
-    printWindow.webContents.print({}, (error, data) => {
+    printWindow.webContents.print({}, function(error, data){
       if (error) throw error;
-      console.log('print PDF successfully.')
       printWindow.close();
     })
   })
